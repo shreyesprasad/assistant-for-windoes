@@ -1,0 +1,359 @@
+import pyttsx3
+import datetime
+import speech_recognition as sr
+import wikipedia
+import smtplib
+import webbrowser as wb
+import psutil
+import pyjokes
+import os
+import pyautogui
+import random
+import json
+import requests
+from urllib.request import urlopen
+import wolframalpha
+import time
+import platform
+import win32gui,win32con
+import pyperclip
+
+engine =pyttsx3.init()
+wolframalpha_app_id = 'LGXKRV-8X3WG7WK55'
+
+def speak(audio):
+    engine.say(audio)
+    engine.runAndWait()
+
+def time_():
+    Time=datetime.datetime.now().strftime("%I:%M:%S")
+    speak("the current time is")
+    speak(Time)
+
+
+def date_():
+    year=datetime.datetime.now().year
+    month=datetime.datetime.now().month
+    date =datetime.datetime.now().day
+    speak("The current date is")
+    speak(date)
+    speak(month)
+    speak(year)
+
+def wishes():
+    speak("Welcome back master!")
+    time_()
+    date_()
+
+    #greeting
+    hour=datetime.datetime.now().hour
+
+    if hour>6 and hour <12:
+        speak("good morning master!")
+    elif hour>=12 and hour<18:
+        speak("good afternoon master!")
+    elif hour>=18 and hour<24:
+        speak("good evening master!")
+    else:
+        speak("good night")
+    
+    speak("sebastian is at your service. how may i assist you")
+
+def TakeCommand():
+    r=sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listning.......")
+        r.pause_threshold = 1
+        audio =r.listen(source)
+
+    try:
+        print("recognising.......")
+        query = r.recognize_google(audio,language='en-US')
+        print(query)
+    except Exception as e:
+        print (e)
+        print("say that again pleas...")
+        return "None"
+    return query
+
+def sendEmail(to,content):
+    server=smtplib.SMTP('smtp.gmail.com',587)
+    server.ehlo()
+    server.starttls()
+
+    server.login('username@gmail.com','password')
+    server.sendmail('username@gmail.com',to,content)
+    server.close()
+
+def screenshot():
+    img=pyautogui.screenshot()
+    img.save('C:/Users/sspqw/Desktop/screeenshot.png')
+
+def cpu():
+    usage=str(psutil.cpu_percent())
+    speak('CPU is at'+usage)
+    battery = psutil.sensors_battery()
+    speak('battery is at')
+    speak(battery.percent)
+    speak('percent')
+
+def joke():
+    speak(pyjokes.get_joke())
+
+def sysdetails():
+    print(platform.uname())
+    speak(platform.uname())
+
+def newmeeting():
+    pyautogui.click(600,400)
+    time.sleep(7)
+    invite()
+
+def joinmeeting(meet_id,password):
+    pyautogui.click(755,400)
+    time.sleep(2)
+    pyautogui.write(meet_id)
+    time.sleep(2)
+    pyautogui.press('enter',interval=1)
+
+    
+
+    time.sleep(3)
+    pyautogui.press('enter',interval=1)
+
+    pyautogui.write(password)
+    pyautogui.press('enter',interval = 1)
+
+def schedulemeeting():
+    pyautogui.click(600,600)
+    time.sleep(2)
+    pyautogui.click(900,350)
+
+def invite():
+    speak("whome should i invite?")
+    to=TakeCommand().lower()
+    speak("opening whatsapp")
+    content =content = pyperclip.paste()
+    pyautogui.press('win',interval=0.1)
+    pyautogui.write('whatsapp')
+    time.sleep(3)
+    pyautogui.press('enter',interval=0.5)
+    time.sleep(30)
+    hwnd=win32gui.GetForegroundWindow()
+    win32gui.ShowWindow(hwnd,win32con.SW_MAXIMIZE)
+    
+    pyautogui.click(150,150)
+    time.sleep(1)
+    pyautogui.write(to)
+    pyautogui.press('enter',interval = 1)
+    time.sleep(1)
+    pyautogui.write(content)
+    pyautogui.press('enter',interval=1)
+
+if __name__ == "__main__":
+    wishes()
+
+    while True:
+        query = TakeCommand().lower()
+
+        if 'time' in query:
+            time_()
+        
+        elif 'date' in query:
+            date_()
+
+        elif 'wikipedia' in query:
+            speak("Searching.......")
+            query=query.replace('wikipedia','')
+            result=wikipedia.summary(query)
+            speak('According to wikipedia')
+            print(result)
+            speak(result)
+
+        elif 'send email' in query:
+            try:
+                speak("what should i say?")
+                content=TakeCommand()
+                speak("who is the reciever?")
+                reciever=input('Enter Recievers email:')
+                to=reciever
+                sendEmail(to,content)
+                speak(content)
+                speak('Email has bin sent.')
+
+            except Exception as e:
+                print(e)
+                speak("email not sent")
+        
+
+        elif 'search chrome' in query:
+            speak('what should i search')
+            chromepath='C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+
+            search=TakeCommand().lower()
+            wb.get(chromepath).open_new_tab(search+'.com')
+
+        elif 'search youtube' in query:
+            speak('what should i search?')
+            search_Term=TakeCommand().lower()
+            speak("As you pleas")
+            wb.open('https://www.youtube.com/results?search_query='+search_Term)
+
+        elif 'search google' in query:
+            speak("what should i search?")
+            search_Term = TakeCommand().lower()
+            speak('kashkamarimashita')
+            wb.open('https://www.google.com/search?q='+search_Term)
+
+        elif 'cpu' in query:
+            cpu()
+
+        elif 'joke' in query:
+            joke()
+
+        elif 'stop it' in query:
+            speak('signing off')
+            quit()
+
+        elif 'word' in query:
+            speak('opening word')
+            pyautogui.press('esc',interval=0.1)
+            time.sleep(0.2)
+            pyautogui.press('win',interval=0.1)
+            pyautogui.write('word')
+            pyautogui.press('enter',interval=0.5)
+            time.sleep(3)
+            pyautogui.press('enter',interval=0.5)
+
+        elif 'write a note' in query:
+            speak("what should i write?")
+            notes=TakeCommand()
+            file=open('notes.txt','w')
+            speak("should i put a date on it?")
+            ans=TakeCommand()
+            if 'yes' in ans or 'sure' in ans:
+                strTime = datetime.datetime.now().strftime("%I:%M:%S")
+                file.write(strTime)
+                file.write(':-')
+                file.write(notes)
+                speak('Done tking note, SIR!')
+            else:
+                file.write(notes)
+
+        elif 'show notes' in query:
+            speak('showing notes')
+            file =open('notes.txt','r')
+            print(file.read())
+            speak(file.read())
+
+        elif 'screenshot' in query:
+            screenshot()
+
+        elif 'play music' in query:
+            songs_dir = 'C:/Users/sspqw/Desktop/m/royal'
+            music = os.listdir(songs_dir)
+            speak('what should i play?')
+            ans = TakeCommand().lower()
+            if 'random' in ans:
+                no = random.randint(1,5)
+            else:
+                no = int(ans.replace('number',''))
+            os.startfile(os.path.join(songs_dir,music[no]))
+
+        elif 'remember that' in query:
+            speak('what should i remember?')
+            memory = TakeCommand().lower()
+            speak("you asked me to remember that"+memory)
+            remember = open('memory.txt','w')
+            remember.write(memory)
+            remember.close()
+
+        elif 'do you remember' in query:
+            remember = open('memory.txt','r')
+            speak('you asked me to remember that'+remember.read())
+
+        elif 'news' in query:
+            try:
+                jsonObj = urlopen("http://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=7a838928a0a9413d8606c6f03485f867")
+                data = json.load(jsonObj)
+                i=1
+                speak("headlines are as follows")
+                print('===========headlines are=========')
+                for item in data['articles']:
+                    print(str(i)+'. '+item['title']+'\n')
+                    print(item['description']+'\n')
+                    speak(item['title'])
+                    i +=1
+
+            except Exception as e:
+                print(str(e))
+
+        elif 'where is' in query:
+            query=query.replace("where is","")
+            location = query
+            speak("User asked to locate"+location)
+            wb.open_new_tab("https://www.google.com/maps/place/"+location)
+
+
+        elif 'calculate' in query:
+            client = wolframalpha.Client(wolframalpha_app_id)
+            indx = query.lower().split().index('calculate')
+            query = query.split()[indx + 1:]
+            res = client.query(''.join(query))
+            answer = next(res.results).text
+            print('the answer is : '+answer)
+            speak('The answer is'+answer)
+
+        elif 'what is' in query:
+            client = wolframalpha.Client(wolframalpha_app_id)
+            res = client.query(query)
+
+            try:
+                print(next(res.results).text)
+                speak(next(res.results).text)
+            except StopIteration:
+                print("No Results")
+
+        elif 'stop listening' in query:
+            speak("for how many seconds")
+            tim=TakeCommand()
+            speak("going to sleep")
+            ans = int(tim)
+            time.sleep(ans)
+            print(ans)
+
+        elif 'system state' in query:
+            sysdetails()
+
+        elif 'sebastian' in query:
+            print('yes sir')
+            speak('yes sir')
+
+        elif 'zoom' in query:
+            speak("opening zoom")
+            pyautogui.press('esc',interval=0.1)
+            time.sleep(0.2)
+            pyautogui.press('win',interval=0.1)
+            pyautogui.write('zoom')
+            time.sleep(3)
+            pyautogui.press('enter',interval=0.5)
+            time.sleep(5)
+            hwnd=win32gui.GetForegroundWindow()
+            win32gui.ShowWindow(hwnd,win32con.SW_MAXIMIZE)
+            if 'arrange' in query:
+                newmeeting()
+            elif 'join' in query:
+                meet_id = '5531629325'
+                password = '676160'
+                joinmeeting(meet_id,password)
+            elif 'schedule' in query:
+                schedulemeeting()
+
+        elif 'log out' in query:
+            os.system("shutdown -l")
+        elif 'restart' in query:
+            os.system("shutdown /r /t 1")
+        elif 'shutdown' in query:
+            os.system("shutdown")
+
+
